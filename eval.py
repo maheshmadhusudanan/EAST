@@ -113,6 +113,10 @@ def detect(score_map, geo_map, timer, score_map_thresh=0.8, box_thresh=0.1, nms_
     return boxes, timer
 
 
+def detectTextFromImage(img):
+     
+
+
 def sort_poly(p):
     min_axis = np.argmin(np.sum(p, axis=1))
     p = p[[min_axis, (min_axis+1)%4, (min_axis+2)%4, (min_axis+3)%4]]
@@ -184,6 +188,7 @@ def main(argv=None):
                         box[0, 0], box[0, 1], box[1, 0], box[1, 1], box[2, 0], box[2, 1], box[3, 0], box[3, 1],
                     ))
                     cv2.polylines(img[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], True, color=(255, 255, 0), thickness=1)
+
 
         img_path = os.path.join(FLAGS.output_dir, os.path.basename(img_file))
         cv2.imwrite(img_path, img[:, :, ::-1])
