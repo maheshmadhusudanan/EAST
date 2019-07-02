@@ -113,10 +113,6 @@ def detect(score_map, geo_map, timer, score_map_thresh=0.8, box_thresh=0.1, nms_
     return boxes, timer
 
 
-def detectTextFromImage(img):
-     
-
-
 def sort_poly(p):
     min_axis = np.argmin(np.sum(p, axis=1))
     p = p[[min_axis, (min_axis+1)%4, (min_axis+2)%4, (min_axis+3)%4]]
