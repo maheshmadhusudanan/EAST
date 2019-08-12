@@ -109,3 +109,5 @@ static/results
 *.py~
 *.h5
 *.out
+
+output/
