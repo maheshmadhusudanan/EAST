@@ -111,3 +111,5 @@ static/results
 *.out
 
 output/
+pipeline/phase0-input
+pipeline/phase0-output

@@ -10,20 +10,25 @@ from os import path
 from keras.models import load_model, model_from_json
 import locality_aware_nms as nms_locality
 import lanms
+import shutil
+from airflow.operators import PythonOperator
+from airflow.models import DAG
+from model import *
+from losses import *
+from data_processor import restore_rectangle
+from text_reader import TextReader
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test_data_path', type=str, default='../data/ICDAR2015/test_data')
+parser.add_argument('--target_file', type=str, default=None)
 parser.add_argument('--gpu_list', type=str, default='0')
 parser.add_argument('--model_path', type=str, default='/models/EAST_IC15+13_model.h5')
 parser.add_argument('--output_dir', type=str, default='tmp/eval/east_icdar2015_resnet_v1_50_rbox/')
 FLAGS = parser.parse_args()
 
-from model import *
-from losses import *
-from data_processor import restore_rectangle
-
 sys.path.insert(0,'../deep-text-recognition-benchmark')
-from text_reader import TextReader
+
+
 
 def get_images():
     '''
@@ -31,6 +36,12 @@ def get_images():
     :return: list of files found
     '''
     files = []
+
+    if FLAGS.target_file is not None:
+        files.append(os.path.join(FLAGS.test_data_path, FLAGS.target_file))
+        print(files)
+        return  files
+
     exts = ['jpg', 'png', 'jpeg', 'JPG']
     for parent, dirnames, filenames in os.walk(FLAGS.test_data_path):
         for filename in filenames:
@@ -39,6 +50,7 @@ def get_images():
                     files.append(os.path.join(parent, filename))
                     break
     print('Find {} images'.format(len(files)))
+    print(files)
     return files
 
 
@@ -176,7 +188,7 @@ def main(argv=None):
     model = model_from_json(loaded_model_json, custom_objects={'tf': tf, 'RESIZE_FACTOR': RESIZE_FACTOR})
     model.load_weights(dir_path+FLAGS.model_path)
     print("**** loading "+dir_path+FLAGS.model_path+"......successful *******")
-
+    
     img_list = get_images()
     for img_file in img_list:
         img = cv2.imread(img_file)[:, :, ::-1]
@@ -217,6 +229,15 @@ def main(argv=None):
 
             #textReader = TextReader({})
             phase2_img_path = os.path.join(FLAGS.output_dir ,"phase2")
+            # clear all existing images
+            print("about to remove all files from "+phase2_img_path)
+            try:
+                shutil.rmtree(phase2_img_path)
+            except Exception as e:
+                print(e)
+
+            os.mkdir(phase2_img_path)
+
             i = 0
             with open(res_file, 'w') as f:
                 for box in boxes:
@@ -233,10 +254,11 @@ def main(argv=None):
                     #                     str(box[2, 0])+","+str(box[2, 1])+" -- "+
                     #                     str(box[3, 0])+","+str(box[3, 1])
                     # )
-                    y1 = box[0,1]
-                    y2 = box[2,1]
-                    x1 = box[0,0]
-                    x2 = box[2,0]
+                    margin = 1
+                    y1 = box[0,1] + margin
+                    y2 = box[2,1] - margin
+                    x1 = box[0,0] + margin
+                    x2 = box[2,0] - margin
                     crop_img = img[y1:y2, x1:x2]                    
                     if crop_img.size != 0:
                        phase2_temp_img_path = phase2_img_path + "/" +str(i) + "_" + os.path.basename(img_file)
@@ -251,13 +273,12 @@ def main(argv=None):
                     #    box[0, 0], box[0, 1], box[1, 0], box[1, 1], box[2, 0], box[2, 1], box[3, 0], box[3, 1],
                     #))
                     #cv2.polylines(img[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], True, color=(255, 255, 0), thickness=1)
-                    # cv2.fillPoly(img[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], color=(255, 255, 255))
+                    cv2.fillPoly(img[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], color=(255, 255, 255))
                     # cv2.rectangle(img, (x1,y1), (x2,y2), color=(0, 0, 255), cv2.FILLED)
 
-
-    
-
-        img_path = os.path.join(FLAGS.output_dir, os.path.basename(img_file))
+        file_name = os.path.basename(img_file)                
+        img_path = os.path.join(FLAGS.output_dir, os.path.splitext(file_name)[0]+"-ready-for-line-detect"+os.path.splitext(file_name)[1])
+        print("about to save the read for line detect file....."+img_path)
         cv2.imwrite(img_path, img[:, :, ::-1])
 
 
