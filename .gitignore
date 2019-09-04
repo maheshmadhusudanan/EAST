@@ -113,3 +113,11 @@ static/results
 output/
 pipeline/phase0-input
 pipeline/phase0-output
+pipeline/phase-1-0-output
+pipeline/phase-1-1-output
+
+horizontal_lines.jpg
+Image_bin.jpg
+img_final_bin.jpg
+verticle_lines.jpg
+demo_images/acord-25-form-fillable-free.jpg

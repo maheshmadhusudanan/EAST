@@ -11,12 +11,9 @@ from keras.models import load_model, model_from_json
 import locality_aware_nms as nms_locality
 import lanms
 import shutil
-from airflow.operators import PythonOperator
-from airflow.models import DAG
 from model import *
 from losses import *
 from data_processor import restore_rectangle
-from text_reader import TextReader
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test_data_path', type=str, default='../data/ICDAR2015/test_data')
