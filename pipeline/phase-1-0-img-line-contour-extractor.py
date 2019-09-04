@@ -79,96 +79,114 @@ class Phase1_0ImageLineContourExtractorHandler(PatternMatchingEventHandler):
         if pipeline_file.file_cat == "M":
             return
 
-        # output of phase 0 is the input to phase1-0
-        input_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase0-output")     
-        out_folder_name = pipeline_file.unique_id+"_"+pipeline_file.page_num
-        temp_output_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase-1-0-output","temp", pipeline_file.task_output_folder_name)        
-        output_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase-1-0-output")  
-        #after phase 1 processing archive the images to archive folder
-        archive_to =  os.path.join(os.path.basename(event.src_path),"processesd")
-        
-        img_file = event.src_path       
-        img = cv2.imread(img_file)[:, :, ::-1]
-        start_time = time.time()
-        img_resized, (ratio_h, ratio_w) = resize_image(img)
-
-        img_resized = (img_resized / 127.5) - 1
-
-        timer = {'net': 0, 'restore': 0, 'nms': 0}
-        start = time.time() 
-
-        # feed image into model
-        print("--->>>>> about to predict score map... for image "+str(img_resized.shape))
-        boxes = None
-        with self.graph1.as_default():
-            with self.tf_session.as_default():
-                score_map, geo_map = self.model.predict(img_resized[np.newaxis, :, :, :])
-                timer['net'] = time.time() - start
-                print("--->>>>> about to detect boxes")
-                boxes, timer = detect(score_map=score_map, geo_map=geo_map, timer=timer)
-                print('{} : net {:.0f}ms, restore {:.0f}ms, nms {:.0f}ms'.format(
-                img_file, timer['net']*1000, timer['restore']*1000, timer['nms']*1000))
-
-        if boxes is not None:
-            boxes = boxes[:, :8].reshape((-1, 4, 2))
-            boxes[:, :, 0] /= ratio_w
-            boxes[:, :, 1] /= ratio_h
-
-        duration = time.time() - start_time
-        print('[timing] {}'.format(duration))
-
-        print("about to remove all files from if already exists"+temp_output_path)
         try:
-            shutil.rmtree(temp_output_path)
-            shutil.rmtree(output_path)
-        except Exception as e:
-            print(e)
-        os.mkdir(temp_output_path)
+            # output of phase 0 is the input to phase1-0
+            input_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase0-output")     
+            temp_output_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase-1-0-output","temp", pipeline_file.task_output_folder_name)        
+            output_folder_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase-1-0-output", pipeline_file.task_output_folder_name) 
+            output_main_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase-1-0-output")
+            #after phase 1 processing archive the images to archive folder
+            archive_to =  os.path.join(os.path.basename(event.src_path),"processesd")
+            
+            img_file = event.src_path       
+            img = cv2.imread(img_file)[:, :, ::-1]
+            start_time = time.time()
+            img_resized, (ratio_h, ratio_w) = resize_image(img)
 
-        # erase all detected boxes       
-        if boxes is not None:            
-            #
-            # remove all the boxes
-            #
-            idx = 0
-            save_pipeline_file = PipelineFileName(task_file_name=os.path.basename(event.src_path))
-            doc_pos_map_file = os.path.join(temp_output_path, "doc_pos_map.csv")
-            with open(doc_pos_map_file, 'w') as f:
-                f.write('{},{},{},{},{}\r\n'.format("file", "x1", "y1", "x2", "y2"))                        
-                for box in boxes:
-                    # to avoid submitting errors
-                    box = sort_poly(box.astype(np.int32))
-                    if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3]-box[0]) < 5:
-                        continue
+            img_resized = (img_resized / 127.5) - 1
 
-                    margin = 1
-                    y1 = box[0,1] + margin
-                    y2 = box[2,1] - margin
-                    x1 = box[0,0] + margin
-                    x2 = box[2,0] - margin
-                    
-                    crop_img = img[y1:y2, x1:x2]                    
-                    if crop_img.size != 0:
-                        idx += 1
-                        save_pipeline_file.segment = "0"
-                        save_pipeline_file.segment = str(idx)
-                        new_file = os.path.join(temp_output_path, save_pipeline_file.task_output_file_name)
-                        print("phase-1-0: extracting snippet file ... "+new_file)
-                        cv2.imwrite(new_file, crop_img)
-                        f.write('{},{},{},{},{}\r\n'.format(save_pipeline_file.task_output_file_name, x1, y1, x2, y2))
+            timer = {'net': 0, 'restore': 0, 'nms': 0}
+            start = time.time() 
+
+            # feed image into model
+            print("--->>>>> about to predict score map... for image "+str(img_resized.shape))
+            boxes = None
+            with self.graph1.as_default():
+                with self.tf_session.as_default():
+                    score_map, geo_map = self.model.predict(img_resized[np.newaxis, :, :, :])
+                    timer['net'] = time.time() - start
+                    print("--->>>>> about to detect boxes")
+                    boxes, timer = detect(score_map=score_map, geo_map=geo_map, timer=timer)
+                    print('{} : net {:.0f}ms, restore {:.0f}ms, nms {:.0f}ms'.format(
+                    img_file, timer['net']*1000, timer['restore']*1000, timer['nms']*1000))
+
+            if boxes is not None:
+                boxes = boxes[:, :8].reshape((-1, 4, 2))
+                boxes[:, :, 0] /= ratio_w
+                boxes[:, :, 1] /= ratio_h
+
+            duration = time.time() - start_time
+            print('[timing] {}'.format(duration))
+
+            print("about to remove all files from if already exists"+temp_output_path)
+            try:
+                shutil.rmtree(temp_output_path)
+                shutil.rmtree(output_folder_path)
+            except Exception as e:
+                print(e)
+            os.mkdir(temp_output_path)
+
+            # erase all detected boxes       
+            if boxes is not None:            
+                #
+                # remove all the boxes
+                #
+                idx = 0
+                save_pipeline_file = PipelineFileName(task_file_name=os.path.basename(event.src_path))
+                doc_pos_map_file = os.path.join(temp_output_path, "doc_pos_map.csv")
+                with open(doc_pos_map_file, 'w') as f:
+                    f.write('{},{},{},{},{}\n'.format("file", "x1", "y1", "x2", "y2"))                        
+                    for box in boxes:
+                        # to avoid submitting errors
+                        box = sort_poly(box.astype(np.int32))
+                        if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3]-box[0]) < 5:
+                            continue
+
+                        margin = 2
+                        y1 = box[0,1] - margin
+                        y2 = box[2,1] + margin
+                        x1 = box[0,0] - margin
+                        x2 = box[2,0] + margin
                         
+                        crop_img = img[y1:y2, x1:x2]                    
+                        if crop_img.size != 0:
+                            idx += 1
+                            save_pipeline_file.segment = "0"
+                            save_pipeline_file.segment = str(idx)
+                            new_file = os.path.join(temp_output_path, save_pipeline_file.task_output_file_name)
+                            print("phase-1-0: extracting snippet file ... "+new_file)
+                            cv2.imwrite(new_file, crop_img)
+                            f.write('{},{},{},{},{}\n'.format(save_pipeline_file.task_output_file_name, x1, y1, x2, y2))
+                            
 
-                    cv2.fillPoly(img[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], color=(255, 255, 255))                    
+                        cv2.fillPoly(img[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], color=(255, 255, 255))                    
 
-            # moving the temp data to output
-            shutil.move(temp_output_path, output_path)
-         
-        # save to file        
-        pipeline_file.file_cat = 'M'                
-        img_path = os.path.join(os.path.dirname(img_file), pipeline_file.task_output_file_name)        
-        print("about to save the line contour file....."+img_path)
-        cv2.imwrite(img_path, img[:, :, ::-1])
-        # move the processed file
+                # moving the temp data to output
+                try:
+                    shutil.move(temp_output_path, output_main_path)
+                except Exception as e:
+                    shutil.rmtree(output_folder_path)
+                    shutil.move(temp_output_path, output_main_path)
+                    print('-----------------------------------------------------------------')
+                    print('-----------------------------------------------------------------')
+                    print(str(e))
+                    print('-----------------------------------------------------------------')
+                    print('-----------------------------------------------------------------')
+                
+            
+            # save to file        
+            pipeline_file.file_cat = 'M'                
+            img_path = os.path.join(os.path.dirname(img_file), pipeline_file.task_output_file_name)        
+            print("about to save the line contour file....."+img_path)
+            cv2.imwrite(img_path, img[:, :, ::-1])
+            # move the processed file
+        
+        except Exception as me:
+            print ("------------------------------------------------- EXCEPTION ---------------------------------------------------------")
+            print (str(me))
+            print("could not process file "+str(event.src_path))
+            print ("------------------------------------------------- EXCEPTION ---------------------------------------------------------")
+
 
 if __name__ == '__main__':
     args = sys.argv[1:]

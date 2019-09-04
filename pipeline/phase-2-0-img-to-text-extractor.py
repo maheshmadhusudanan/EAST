@@ -6,6 +6,7 @@ from watchdog.events import PatternMatchingEventHandler
 import pandas as pd
 import sys
 import os
+import csv
 sys.path.append(os.path.abspath(os.path.join('../../deep-text-recognition-benchmark')))
 from text_reader import TextReader
 
@@ -49,13 +50,14 @@ class Phase_2_0_Image2TextExtractor(PatternMatchingEventHandler):
             f.write('{},{}\r\n'.format("file", "pred"))
             for r in results:
                 f.write("%s\n" % r)
+
         print("processed "+str(len(results))+" files...")
         
         #
         # combine files
         #
-        docs_map_df = pd.read_csv(doc_pos_map_file).set_index('file')
-        results_df = pd.read_csv(res_file).set_index('file')
+        docs_map_df = pd.read_csv(doc_pos_map_file, error_bad_lines=False).set_index('file')
+        results_df = pd.read_csv(res_file, error_bad_lines=False).set_index('file')
         comb_df = results_df[results_df.index.isin(docs_map_df.index)]
             
         final_df = pd.concat([docs_map_df, comb_df], axis=1)
