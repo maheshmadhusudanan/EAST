@@ -1,7 +1,7 @@
 import uuid
 from os import path
 
-class PipelineFileName:
+class PipelineFileName(object):
     
     def __init__(self, original_file_name=None, task_file_name=None, page_num="0", segment="", output_file_ext=".jpg"):
         
@@ -29,7 +29,7 @@ class PipelineFileName:
 
 
     def to_string(self):
-        return "({0}, {1})".format(self.__unique_id, self.__file_ext)
+        return "({0}, {1})".format(self.unique_id, self.file_ext)
 
     @property
     def file_cat(self):   
@@ -46,8 +46,9 @@ class PipelineFileName:
 
     @segment.setter
     def segment(self, v):  
-        print("setting segment = "+v)      
-        self.__segment = "0" if (v == "0" or v == "") else self.__segment+"-"+v
+        print("setting segment = "+v)
+        v = v.strip()      
+        self.__segment = "0" if (v == "0" or v == "") else self.segment+"-"+v
     
     @property
     def page_num(self):   
@@ -91,7 +92,8 @@ class PipelineFileName:
 
     @property
     def task_output_file_name(self):        
-        return self.unique_id+"_pg-"+str(self.page_num) + "_sg-"+str(self.segment) + (("_"+self.file_cat) if self.file_cat != "" else "" )+str(self.output_file_ext)
+        return self.unique_id+"_pg-"+str(self.page_num) + "_sg-"+str(self.segment) + \
+                (("_"+self.file_cat) if self.file_cat != "" else "" )+str(self.output_file_ext)
 
     @property
     def task_output_folder_name(self):        

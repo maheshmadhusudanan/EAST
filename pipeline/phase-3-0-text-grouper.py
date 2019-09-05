@@ -7,12 +7,10 @@ import pandas as pd
 import sys
 import os
 import csv
-sys.path.append(os.path.abspath(os.path.join('../../deep-text-recognition-benchmark')))
-from text_reader import TextReader
 
-class Phase_2_0_Image2TextExtractor(PatternMatchingEventHandler):
+class Phase_3_0_TextGrouper(PatternMatchingEventHandler):
 
-    patterns = ["*"]
+    patterns = ["*.csv"]
     ignore_directories = False
     txtReader = None
 
@@ -41,29 +39,8 @@ class Phase_2_0_Image2TextExtractor(PatternMatchingEventHandler):
     
     def process(self, event):
 
-        try:        
-            results = self.txtReader.predictAllImagesInFolder(os.path.abspath(event.src_path))
-            res_file = os.path.join(event.src_path,"text-reader-output.csv")
-            doc_pos_map_file = os.path.join(event.src_path,"doc_pos_map.csv")
-            combined_file = os.path.join(event.src_path,"combined_results.csv")
+        try:       
 
-            with open(res_file, 'w') as f:
-                f.write('{},{}\r\n'.format("file", "pred"))
-                for r in results:
-                    f.write("%s\n" % r)
-
-            print("processed "+str(len(results))+" files...")
-            
-            #
-            # combine files
-            #
-            docs_map_df = pd.read_csv(doc_pos_map_file, error_bad_lines=False).set_index('file')
-            results_df = pd.read_csv(res_file, error_bad_lines=False).set_index('file')
-            comb_df = results_df[results_df.index.isin(docs_map_df.index)]
-                
-            final_df = pd.concat([docs_map_df, comb_df], axis=1, error_bad_lines=False)
-            final_df.to_csv(combined_file)
-            
             print("completed combining doc map and results...")
 
             print("------------------------------ complete ------------------------")
@@ -79,7 +56,7 @@ if __name__ == '__main__':
     args = sys.argv[1:]
 
     observer = Observer()
-    observer.schedule(Phase_2_0_Image2TextExtractor(), path=args[0] if args else './phase-1-0-output')
+    observer.schedule(Phase_3_0_TextGrouper(), path=args[0] if args else './phase-3-0-input')
     observer.start()
 
     try:
