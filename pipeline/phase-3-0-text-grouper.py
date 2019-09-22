@@ -25,19 +25,15 @@ class Phase_3_0_TextGrouper(PatternMatchingEventHandler):
         # if (event.is_directory == False):
         #     return
         self.process(event)
-
-    
-    #
-    # This function will detect all the characters on the page
-    # and erase it, so that the form borders can be easily detected.
-    # This will create a file with name <target_file>-M.jpg, where M denotes the mask in 
-    # a loose sense.
+ 
     
     def process(self, event):
 
         try:       
 
             print("completed combining doc map and results...")
+
+            
 
             print("------------------------------ complete ------------------------")
         except Exception as me:
