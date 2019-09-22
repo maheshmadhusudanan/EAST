@@ -16,12 +16,8 @@ class Phase_3_0_TextGrouper(PatternMatchingEventHandler):
 
     def __init__(self):
         
-        # predict
-        # model.eval()
-        self.txtReader = TextReader({})
-
          # call super
-        super(Phase_2_0_Image2TextExtractor, self).__init__()
+        super(Phase_3_0_TextGrouper, self).__init__()
     
         
     def on_created(self, event):

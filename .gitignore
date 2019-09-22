@@ -115,6 +115,7 @@ pipeline/phase0-input
 pipeline/phase0-output
 pipeline/phase-1-0-output
 pipeline/phase-1-1-output
+pipeline/phase-2-0-output
 
 horizontal_lines.jpg
 Image_bin.jpg

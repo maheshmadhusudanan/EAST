@@ -14,14 +14,17 @@ class PipelineFileName(object):
             fname_split = file_wo_ext.split("_")
             assert(len(fname_split) >= 3)
             self.original_file_name = None
-            self.unique_id = fname_split[0]
+            uids_parts = fname_split[0].split("-") 
+            self.unique_pg_id = str(uids_parts[len(uids_parts)-1])
+            self.unique_id = fname_split[0].replace("-"+self.unique_pg_id,"")            
             self.page_num = str(fname_split[1].replace("pg-",""))
             self.segment = str(fname_split[2].replace("sg-",""))            
             self.file_cat = fname_split[3] if len(fname_split) > 3 else ""
         if (original_file_name != None):
             print("!!!!!!!!! building it from original file name!!! "+original_file_name)
             self.original_file_name = original_file_name
-            self.unique_id = str(uuid.uuid5(uuid.NAMESPACE_OID,original_file_name))+"-"+str(uuid.uuid4())[:8]            
+            self.unique_id = str(uuid.uuid5(uuid.NAMESPACE_OID,original_file_name))
+            self.unique_pg_id = str(uuid.uuid4())[:8]            
             self.page_num = str(page_num)
             self.segment = str(segment)
             self.file_ext = str(path.splitext(original_file_name)[1])
@@ -29,7 +32,7 @@ class PipelineFileName(object):
 
 
     def to_string(self):
-        return "({0}, {1})".format(self.unique_id, self.file_ext)
+        return "({0}, {1}, {2})".format(self.unique_id, self.unique_pg_id, self.file_ext)
 
     @property
     def file_cat(self):   
@@ -83,6 +86,14 @@ class PipelineFileName(object):
         self.__unique_id = v
 
     @property
+    def unique_pg_id(self):        
+        return self.__unique_pg_id
+
+    @unique_pg_id.setter
+    def unique_pg_id(self, v):       
+        self.__unique_pg_id = v
+
+    @property
     def output_file_ext(self):        
         return self.__output_file_ext
 
@@ -92,12 +103,12 @@ class PipelineFileName(object):
 
     @property
     def task_output_file_name(self):        
-        return self.unique_id+"_pg-"+str(self.page_num) + "_sg-"+str(self.segment) + \
+        return self.unique_id+"-"+self.unique_pg_id+"_pg-"+str(self.page_num) + "_sg-"+str(self.segment) + \
                 (("_"+self.file_cat) if self.file_cat != "" else "" )+str(self.output_file_ext)
 
     @property
     def task_output_folder_name(self):        
-        return self.unique_id+"_pg-"+str(self.page_num)
+        return self.unique_id+"-"+self.unique_pg_id+"_pg-"+str(self.page_num)
 
     
    

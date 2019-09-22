@@ -88,47 +88,50 @@ class Phase1_1ImageSegmentorHandler(PatternMatchingEventHandler):
             archive_to =  os.path.join(os.path.basename(event.src_path),"processesd")
 
             img = cv2.imread(event.src_path ,0)
-            (thresh, img_bin) = cv2.threshold(img, 128, 255,cv2.THRESH_BINARY|cv2.THRESH_OTSU)
-            
-            #invert image to binary
-            img_bin = 255-img_bin 
-            
-            #define the kernal
-            # Defining a kernel length
-            kernel_length = np.array(img).shape[1]//80
-            kernel_length = 2 
-            # A verticle kernel of (1 X kernel_length), which will detect all the verticle lines from the image.
-            verticle_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, kernel_length))
-            kernel_length = 5
-            # A horizontal kernel of (kernel_length X 1), which will help to detect all the horizontal line from the image.
-            hori_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_length, 1))
-            print(hori_kernel)
-            print(verticle_kernel)
-            # A kernel of (3 X 3) ones.
-            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+            thresh_img = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)    
 
-            #
-            # Morphological operation to detect vertical lines from an image
-            img_temp1 = cv2.erode(img_bin, verticle_kernel, iterations=5)
-            verticle_lines_img = cv2.dilate(img_temp1, verticle_kernel, iterations=5)
-            #cv2.imwrite("verticle_lines.jpg",verticle_lines_img)
-            # Morphological operation to detect horizontal lines from an image
-            img_temp2 = cv2.erode(img_bin, hori_kernel, iterations=5)
-            horizontal_lines_img = cv2.dilate(img_temp2, hori_kernel, iterations=15)
-            #cv2.imwrite("horizontal_lines.jpg",horizontal_lines_img)
+            
+            # (thresh, img_bin) = cv2.threshold(img, 128, 255,cv2.THRESH_BINARY|cv2.THRESH_OTSU)
+            
+            # #invert image to binary
+            # img_bin = 255-img_bin 
+            
+            # #define the kernal
+            # # Defining a kernel length
+            # kernel_length = np.array(img).shape[1]//80
+            # kernel_length = 2 
+            # # A verticle kernel of (1 X kernel_length), which will detect all the verticle lines from the image.
+            # verticle_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, kernel_length))
+            # kernel_length = 5
+            # # A horizontal kernel of (kernel_length X 1), which will help to detect all the horizontal line from the image.
+            # hori_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_length, 1))
+            # print(hori_kernel)
+            # print(verticle_kernel)
+            # # A kernel of (3 X 3) ones.
+            # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 
-            #
-            #
-            # Weighting parameters, this will decide the quantity of an image to be added to make a new image.
-            alpha = 0.5
-            beta = 1.0 - alpha
-            # This function helps to add two image with specific weight parameter to get a third image as summation of two image.
-            img_final_bin = cv2.addWeighted(verticle_lines_img, alpha, horizontal_lines_img, beta, 0.0)
-            img_final_bin = cv2.erode(~img_final_bin, kernel, iterations=1)
-            (thresh, img_final_bin) = cv2.threshold(img_final_bin, 128,255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+            # #
+            # # Morphological operation to detect vertical lines from an image
+            # img_temp1 = cv2.erode(img_bin, verticle_kernel, iterations=5)
+            # verticle_lines_img = cv2.dilate(img_temp1, verticle_kernel, iterations=5)
+            # #cv2.imwrite("verticle_lines.jpg",verticle_lines_img)
+            # # Morphological operation to detect horizontal lines from an image
+            # img_temp2 = cv2.erode(img_bin, hori_kernel, iterations=5)
+            # horizontal_lines_img = cv2.dilate(img_temp2, hori_kernel, iterations=15)
+            # #cv2.imwrite("horizontal_lines.jpg",horizontal_lines_img)
+
+            # #
+            # #
+            # # Weighting parameters, this will decide the quantity of an image to be added to make a new image.
+            # alpha = 0.5
+            # beta = 1.0 - alpha
+            # # This function helps to add two image with specific weight parameter to get a third image as summation of two image.
+            # img_final_bin = cv2.addWeighted(verticle_lines_img, alpha, horizontal_lines_img, beta, 0.0)
+            # img_final_bin = cv2.erode(~img_final_bin, kernel, iterations=1)
+            # (thresh, img_final_bin) = cv2.threshold(img_final_bin, 128,255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
             
             # Find contours for image, which will detect all the boxes
-            contours, hierarchy = cv2.findContours(img_final_bin, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contours, hierarchy = cv2.findContours(thresh_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             # Sort all the contours by top to bottom.
             (contours, boundingBoxes) = self.sort_contours(contours, method="top-to-bottom")
 
@@ -145,7 +148,7 @@ class Phase1_1ImageSegmentorHandler(PatternMatchingEventHandler):
             bounding_rects = []
             for c in contours:       
                 x, y, w, h = cv2.boundingRect(c)    
-                if (w > 5 and h > 5) and w >= 1*h:
+                if (w > 10 and h > 10) and w >= 1*h:
                     r = {'x':x,'y':y,'w':w,'h':h}
                     n = SimpleNamespace(**r)
                     bounding_rects.append(n)
@@ -158,7 +161,7 @@ class Phase1_1ImageSegmentorHandler(PatternMatchingEventHandler):
             process_pipeline_file = PipelineFileName(task_file_name=os.path.basename(tru_img_pipeline_file.task_output_file_name))
             res_file = os.path.join(temp_output_path, '{}.csv'.format(os.path.basename(tru_img_path).split('.')[0]))
             with open(res_file, 'w') as f:
-                for r in dedupe_rects:
+                for r in bounding_rects:
                     # Returns the location and width,height for every contour        
                     idx += 1
                     new_img = img_tru[r.y:r.y+r.h, r.x:r.x+r.w]            
@@ -185,6 +188,21 @@ class Phase1_1ImageSegmentorHandler(PatternMatchingEventHandler):
             print("could not process file "+str(event.src_path))
             print ("------------------------------------------------- EXCEPTION ---------------------------------------------------------")
 
+
+    def get_rectangles_in_image(thresh_img, strict=True):
+        
+        id= -1
+        MIN_BOUNDED_AREA = 5
+        contours, hierarchy = cv2.findContours(thresh_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        
+        boundRect = [None]*len(contours)
+        for cnt in contours:
+            approx = cv2.approxPolyDP(cnt,0.01*cv2.arcLength(cnt,True),True)    
+            if (len(approx)==4 or (not strict)) and (cv2.contourArea(cnt) > MIN_BOUNDED_AREA):
+                id += 1
+                boundRect[id] = cv2.boundingRect(approx)
+        
+        return boundRect
 
 
 if __name__ == '__main__':

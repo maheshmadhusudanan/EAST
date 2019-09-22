@@ -1,0 +1,33 @@
+preloading the model with opts namespace(FeatureExtraction='ResNet', PAD=True, Prediction='Attn', SequenceModeling='BiLSTM', Transformation='TPS', batch_max_length=25, batch_size=50, character='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~', hidden_size=256, imgH=32, imgW=100, input_channel=1, num_class=96, num_fiducial=20, num_gpu=0, output_channel=512, rgb=False, saved_model='/mnt/c/Users/mahesh.m/Documents/ProjPyWorkspace/deep-text-recognition-benchmark/models/TPS-ResNet-BiLSTM-Attn-case-sensitive.pth', sensitive=True, workers=5)
+namespace(FeatureExtraction='ResNet', PAD=True, Prediction='Attn', SequenceModeling='BiLSTM', Transformation='TPS', batch_max_length=25, batch_size=50, character='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~', hidden_size=256, imgH=32, imgW=100, input_channel=1, num_class=96, num_fiducial=20, num_gpu=0, output_channel=512, rgb=False, saved_model='/mnt/c/Users/mahesh.m/Documents/ProjPyWorkspace/deep-text-recognition-benchmark/models/TPS-ResNet-BiLSTM-Attn-case-sensitive.pth', sensitive=True, workers=5)
+loading pretrained model from /mnt/c/Users/mahesh.m/Documents/ProjPyWorkspace/deep-text-recognition-benchmark/models/TPS-ResNet-BiLSTM-Attn-case-sensitive.pth
+triggered event  is dir=False , file path = ./phase-1-0-output/3a378fa7-1f5e-5734-a1f4-35912582c6ec-8d6a1c36_pg-0
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+processed 410 files...
+phase-2 : completed combining doc map and results...
+------------------------------ complete phase 2------------------------
+triggered event  is dir=False , file path = ./phase-1-0-output/3a378fa7-1f5e-5734-a1f4-35912582c6ec-22c686f6_pg-1
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+processed 267 files...
+phase-2 : completed combining doc map and results...
+------------------------------ complete phase 2------------------------
+triggered event  is dir=False , file path = ./phase-1-0-output/3a378fa7-1f5e-5734-a1f4-35912582c6ec-0581a859_pg-2
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+############# About to predict for next batch ****
+processed 130 files...
+phase-2 : completed combining doc map and results...
+------------------------------ complete phase 2------------------------
