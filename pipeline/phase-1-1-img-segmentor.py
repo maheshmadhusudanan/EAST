@@ -65,7 +65,9 @@ class Phase1_1ImageSegmentorHandler(PatternMatchingEventHandler):
         return (cnts, boundingBoxes)
 
     def process(self, event):
-                
+
+        print("------------------------------ PHASE-1-1 STARTED for file "+event.src_path+"------------------------")                                
+
         pipeline_file = PipelineFileName(task_file_name=os.path.basename(event.src_path))                        
 
         if pipeline_file.file_cat != "M":
@@ -80,7 +82,7 @@ class Phase1_1ImageSegmentorHandler(PatternMatchingEventHandler):
             # output of phase 0 is the input to phase1-0
             input_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase0-output")
             #output of phase 1-0
-            out_folder_name = pipeline_file.unique_id+"_"+pipeline_file.page_num
+            out_folder_name = pipeline_file.task_output_folder_name
             temp_output_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase-1-1-output","temp", out_folder_name)        
             output_path = os.path.join(os.path.dirname(os.path.realpath("__file__")) , "phase-1-1-output")
             old_output_path = os.path.join(output_path, out_folder_name)
@@ -180,13 +182,13 @@ class Phase1_1ImageSegmentorHandler(PatternMatchingEventHandler):
             move_to =  os.path.join(os.path.dirname(tru_img_path), "processed",os.path.basename(tru_img_path))
             shutil.move(tru_img_path, move_to)
             print ("moved file "+event.src_path+ " to.. "+move_to)
-            print ("------------------------------------------------- COMPLETE ---------------------------------------------------------")
+            print ("------------------------------------------------- COMPLETE PHASE-1-1---------------------------------------------------------")
         
         except Exception as me:
-            print ("------------------------------------------------- EXCEPTION ---------------------------------------------------------")
+            print ("------------------------------------------------- EXCEPTION PHASE-1-1---------------------------------------------------------")
             print (str(me))
             print("could not process file "+str(event.src_path))
-            print ("------------------------------------------------- EXCEPTION ---------------------------------------------------------")
+            print ("------------------------------------------------- END EXCEPTION PHASE-1-1---------------------------------------------------------")
 
 
     def get_rectangles_in_image(thresh_img, strict=True):

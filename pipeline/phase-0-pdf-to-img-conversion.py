@@ -29,7 +29,8 @@ class Pdf2ImageConvertorHandler(PatternMatchingEventHandler):
 
         for page in pages:
 
-            pipeline_file  = PipelineFileName(os.path.basename(event.src_path), page_num=pages.index(page))
+            pipeline_file  = PipelineFileName(os.path.basename(event.src_path), page_num=pages.index(page))            
+            pipeline_file.file_ext = ".jpg"
             outfile = os.path.join(self.output_path , pipeline_file.task_output_file_name)
             print ("saving..."+outfile)
             with open(outfile, 'w') as f:                 

@@ -74,6 +74,7 @@ class Phase1_0ImageLineContourExtractorHandler(PatternMatchingEventHandler):
     
     def process(self, event):
         
+        print("------------------------------ PHASE-1-0 STARTED for file "+event.src_path+"------------------------")                        
         pipeline_file = PipelineFileName(task_file_name=os.path.basename(event.src_path))
 
         if pipeline_file.file_cat == "M":
@@ -179,13 +180,16 @@ class Phase1_0ImageLineContourExtractorHandler(PatternMatchingEventHandler):
             img_path = os.path.join(os.path.dirname(img_file), pipeline_file.task_output_file_name)        
             print("about to save the line contour file....."+img_path)
             cv2.imwrite(img_path, img[:, :, ::-1])
+
+            print("------------------------------ COMPLETE PHASE-1-0 for file "+event.src_path+"------------------------")                        
+
             # move the processed file
         
         except Exception as me:
-            print ("------------------------------------------------- EXCEPTION ---------------------------------------------------------")
+            print ("------------------------------------------------- EXCEPTION PHASE_1-0---------------------------------------------------------")
             print (str(me))
             print("could not process file "+str(event.src_path))
-            print ("------------------------------------------------- EXCEPTION ---------------------------------------------------------")
+            print ("------------------------------------------------- END EXCEPTION PHASE_1-0---------------------------------------------------------")
 
 
 if __name__ == '__main__':

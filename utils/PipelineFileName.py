@@ -3,23 +3,43 @@ from os import path
 
 class PipelineFileName(object):
     
-    def __init__(self, original_file_name=None, task_file_name=None, page_num="0", segment="", output_file_ext=".jpg"):
+    def __init__(self, original_file_name=None, task_file_name=None, page_num="0", segment=""):
         
-        self.output_file_ext = str(output_file_ext)
+        self.file_cat = ""
+        self.file_ext = ""
+        self.original_file_name = ""
+        self.page_num = ""
+        self.segment = ""
+        self.unique_id = ""
+        self.unique_pg_id = ""
         
         print("*********** Building pipeline file object "+str(task_file_name) + ","+str(original_file_name))
         if (task_file_name != None):
-            file_wo_ext = path.splitext(task_file_name)[0]
-            print("deserializing file name = "+file_wo_ext)
-            fname_split = file_wo_ext.split("_")
-            assert(len(fname_split) >= 3)
-            self.original_file_name = None
-            uids_parts = fname_split[0].split("-") 
-            self.unique_pg_id = str(uids_parts[len(uids_parts)-1])
-            self.unique_id = fname_split[0].replace("-"+self.unique_pg_id,"")            
-            self.page_num = str(fname_split[1].replace("pg-",""))
-            self.segment = str(fname_split[2].replace("sg-",""))            
-            self.file_cat = fname_split[3] if len(fname_split) > 3 else ""
+            
+            file_wo_ext, file_extension = path.splitext(task_file_name)
+            print("deserializing file name = "+file_wo_ext+"...with extension = "+file_extension)
+            self.original_file_name = None                
+            self.file_ext = file_extension if (file_extension != "" and file_extension != None) else ""
+            
+            fname_split = file_wo_ext.split("_")            
+            for uid in fname_split:
+                
+                uids_parts = uid.split("-") 
+                if uids_parts[0] == "id":                                        
+                    self.unique_pg_id = str(uids_parts[len(uids_parts)-1])                    
+                    self.unique_id = uid.replace("-"+self.unique_pg_id,"")
+                    self.unique_id = self.unique_id.replace("id-","")
+                
+                if uids_parts[0] == "pg":                                                
+                    self.page_num = str(uids_parts[1])
+
+                if uids_parts[0] == "sg":                                                
+                    self.segment = str(uids_parts[1])
+
+                if uids_parts[0] == "ct":                                                
+                    self.file_cat = str(uids_parts[1])
+                        
+            
         if (original_file_name != None):
             print("!!!!!!!!! building it from original file name!!! "+original_file_name)
             self.original_file_name = original_file_name
@@ -94,21 +114,16 @@ class PipelineFileName(object):
         self.__unique_pg_id = v
 
     @property
-    def output_file_ext(self):        
-        return self.__output_file_ext
-
-    @output_file_ext.setter
-    def output_file_ext(self, v):       
-        self.__output_file_ext = v
-
-    @property
     def task_output_file_name(self):        
-        return self.unique_id+"-"+self.unique_pg_id+"_pg-"+str(self.page_num) + "_sg-"+str(self.segment) + \
-                (("_"+self.file_cat) if self.file_cat != "" else "" )+str(self.output_file_ext)
+        return ("id-"+self.unique_id+"-") + (self.unique_pg_id)+ \
+                (("_pg-"+self.page_num) if self.page_num != "" else "" )+ \
+                (("_sg-"+self.segment) if self.segment != "" else "" )+ \
+                (("_ct-"+self.file_cat) if self.file_cat != "" else "" )+ \
+                ((self.file_ext) if self.file_ext != "" else "" )
 
     @property
     def task_output_folder_name(self):        
-        return self.unique_id+"-"+self.unique_pg_id+"_pg-"+str(self.page_num)
+        return "id-"+self.unique_id+"-"+self.unique_pg_id+"_pg-"+str(self.page_num)
 
     
    
