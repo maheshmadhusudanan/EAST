@@ -13,7 +13,6 @@ from PipelineFileName import PipelineFileName
 from types import SimpleNamespace
 import traceback
 
-
 class Phase_3_0_TextGrouper(PatternMatchingEventHandler):
 
     patterns = ["*.csv"]
